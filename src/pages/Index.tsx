@@ -4,16 +4,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3 } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, LogOut, User } from "lucide-react";
 import NewsAnalyzer from "@/components/NewsAnalyzer";
 import StockPrediction from "@/components/StockPrediction";
 import TradingChart from "@/components/TradingChart";
 import TradingSignals from "@/components/TradingSignals";
+import LoginComponent from "@/components/LoginComponent";
+import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 
-const Index = () => {
+const DashboardContent = () => {
   const [selectedStock, setSelectedStock] = useState("AAPL");
   const [stockInput, setStockInput] = useState("");
+  const { user, logout } = useAuth();
   const { toast } = useToast();
 
   const popularStocks = [
@@ -38,17 +41,50 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-financial-gradient p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-3">
-            <Activity className="h-8 w-8 text-bull animate-pulse-glow" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-bull to-bull-light bg-clip-text text-transparent">
-              FinanceAI Agent
-            </h1>
+        {/* Header with User Info */}
+        <div className="flex justify-between items-center">
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center space-x-3">
+              <Activity className="h-8 w-8 text-bull animate-pulse-glow" />
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-bull to-bull-light bg-clip-text text-transparent">
+                FinanceAI Agent
+              </h1>
+            </div>
+            <p className="text-muted-foreground text-lg">
+              AI-Powered Financial News Analysis & Stock Trading Signals Platform
+            </p>
           </div>
-          <p className="text-muted-foreground text-lg">
-            AI-Powered Financial News Analysis & Stock Trading Signals Platform
-          </p>
+          
+          {/* User Profile */}
+          <Card className="financial-card">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                {user?.picture ? (
+                  <img 
+                    src={user.picture} 
+                    alt={user.name} 
+                    className="w-10 h-10 rounded-full"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-bull/20 flex items-center justify-center">
+                    <User className="h-5 w-5 text-bull" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-medium">{user?.name}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email}</p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={logout}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Stock Search */}
@@ -140,6 +176,35 @@ const Index = () => {
       </div>
     </div>
   );
+};
+
+const Index = () => {
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
+    </AuthProvider>
+  );
+};
+
+const AuthenticatedApp = () => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-financial-gradient flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Activity className="h-12 w-12 text-bull animate-spin mx-auto" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginComponent />;
+  }
+
+  return <DashboardContent />;
 };
 
 export default Index;

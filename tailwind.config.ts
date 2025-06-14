@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				bull: {
+					DEFAULT: '#00D4AA',
+					light: '#4FFFDF',
+					dark: '#00A085'
+				},
+				bear: {
+					DEFAULT: '#FF4D6D',
+					light: '#FF8FA3',
+					dark: '#CC3A56'
+				},
+				financial: {
+					bg: '#0A0E1A',
+					card: '#1A1F35',
+					border: '#2A2F45'
 				}
 			},
 			borderRadius: {
@@ -84,11 +100,25 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 5px #00D4AA40'
+					},
+					'50%': {
+						boxShadow: '0 0 20px #00D4AA80, 0 0 30px #00D4AA40'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'financial-gradient': 'linear-gradient(135deg, #0A0E1A 0%, #1A1F35 50%, #2A2F45 100%)',
+				'bull-gradient': 'linear-gradient(135deg, #00D4AA 0%, #4FFFDF 100%)',
+				'bear-gradient': 'linear-gradient(135deg, #FF4D6D 0%, #FF8FA3 100%)'
 			}
 		}
 	},

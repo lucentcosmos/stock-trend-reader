@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Newspaper, RefreshCw, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Newspaper, RefreshCw, TrendingUp, TrendingDown, Minus, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface NewsItem {
@@ -17,6 +16,7 @@ interface NewsItem {
   source: string;
   timestamp: string;
   relevance: number;
+  url: string;
 }
 
 interface NewsAnalyzerProps {
@@ -36,31 +36,36 @@ const NewsAnalyzer = ({ selectedStock }: NewsAnalyzerProps) => {
         title: `${selectedStock} Reports Strong Q4 Earnings, Beats Expectations`,
         summary: "Company demonstrates robust financial performance with revenue growth exceeding analyst predictions.",
         sentiment: 'bullish' as const,
-        source: "Financial Times"
+        source: "Financial Times",
+        baseUrl: "https://www.ft.com/content/"
       },
       {
         title: `Market Volatility Affects ${selectedStock} Trading Volume`,
         summary: "Recent market fluctuations have led to increased trading activity and price movements.",
         sentiment: 'neutral' as const,
-        source: "Reuters"
+        source: "Reuters",
+        baseUrl: "https://www.reuters.com/business/"
       },
       {
         title: `${selectedStock} Announces Strategic Partnership with Tech Giant`,
         summary: "New collaboration expected to drive innovation and expand market reach significantly.",
         sentiment: 'bullish' as const,
-        source: "Bloomberg"
+        source: "Bloomberg",
+        baseUrl: "https://www.bloomberg.com/news/articles/"
       },
       {
         title: `Regulatory Concerns Impact ${selectedStock} Stock Performance`,
         summary: "New industry regulations raise questions about potential compliance costs and operational changes.",
         sentiment: 'bearish' as const,
-        source: "Wall Street Journal"
+        source: "Wall Street Journal",
+        baseUrl: "https://www.wsj.com/articles/"
       },
       {
         title: `${selectedStock} Invests $2B in AI and Machine Learning Infrastructure`,
         summary: "Major technology investment positions company for future growth in artificial intelligence sector.",
         sentiment: 'bullish' as const,
-        source: "TechCrunch"
+        source: "TechCrunch",
+        baseUrl: "https://techcrunch.com/"
       }
     ];
 
@@ -72,7 +77,8 @@ const NewsAnalyzer = ({ selectedStock }: NewsAnalyzerProps) => {
       confidence: Math.random() * 0.3 + 0.7, // 70-100%
       source: template.source,
       timestamp: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-      relevance: Math.random() * 0.3 + 0.7 // 70-100%
+      relevance: Math.random() * 0.3 + 0.7, // 70-100%
+      url: `${template.baseUrl}${selectedStock.toLowerCase()}-${Date.now()}-${index}`
     }));
   };
 
@@ -203,9 +209,15 @@ const NewsAnalyzer = ({ selectedStock }: NewsAnalyzerProps) => {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
-                        <h3 className="font-semibold text-sm leading-tight">
-                          {item.title}
-                        </h3>
+                        <a 
+                          href={item.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="font-semibold text-sm leading-tight hover:text-bull transition-colors flex items-start gap-2 group"
+                        >
+                          <span className="flex-1">{item.title}</span>
+                          <ExternalLink className="h-3 w-3 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                        </a>
                         <div className="flex items-center space-x-2 ml-4">
                           {getSentimentIcon(item.sentiment)}
                           <Badge 

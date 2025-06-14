@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Search, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3 } fro
 import NewsAnalyzer from "@/components/NewsAnalyzer";
 import StockPrediction from "@/components/StockPrediction";
 import TradingChart from "@/components/TradingChart";
+import TradingSignals from "@/components/TradingSignals";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -47,7 +47,7 @@ const Index = () => {
             </h1>
           </div>
           <p className="text-muted-foreground text-lg">
-            AI-Powered Financial News Analysis & Stock Prediction Platform
+            AI-Powered Financial News Analysis & Stock Trading Signals Platform
           </p>
         </div>
 
@@ -119,8 +119,13 @@ const Index = () => {
 
         {/* Main Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Trading Signals */}
+          <div>
+            <TradingSignals selectedStock={selectedStock} />
+          </div>
+
           {/* News Analysis */}
-          <div className="lg:col-span-2">
+          <div>
             <NewsAnalyzer selectedStock={selectedStock} />
           </div>
 

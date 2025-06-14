@@ -29,7 +29,96 @@ const NewsAnalyzer = ({ selectedStock }: NewsAnalyzerProps) => {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { toast } = useToast();
 
-  // Simulated news data generator
+  // Simple sentiment analysis based on keywords
+  const analyzeSentiment = (title: string, summary: string): { sentiment: 'bullish' | 'bearish' | 'neutral', confidence: number } => {
+    const text = (title + ' ' + summary).toLowerCase();
+    
+    const bullishWords = ['earnings beat', 'profit', 'growth', 'up', 'rise', 'gain', 'positive', 'strong', 'beats', 'exceeds', 'partnership', 'investment', 'innovation'];
+    const bearishWords = ['loss', 'down', 'fall', 'decline', 'negative', 'weak', 'misses', 'regulatory', 'concern', 'volatility', 'drop'];
+    
+    let bullishScore = 0;
+    let bearishScore = 0;
+    
+    bullishWords.forEach(word => {
+      if (text.includes(word)) bullishScore++;
+    });
+    
+    bearishWords.forEach(word => {
+      if (text.includes(word)) bearishScore++;
+    });
+    
+    if (bullishScore > bearishScore) {
+      return { sentiment: 'bullish', confidence: Math.min(0.9, 0.6 + (bullishScore - bearishScore) * 0.1) };
+    } else if (bearishScore > bullishScore) {
+      return { sentiment: 'bearish', confidence: Math.min(0.9, 0.6 + (bearishScore - bullishScore) * 0.1) };
+    } else {
+      return { sentiment: 'neutral', confidence: 0.5 + Math.random() * 0.2 };
+    }
+  };
+
+  const fetchYahooFinanceNews = async () => {
+    setIsLoading(true);
+    console.log(`Fetching Yahoo Finance news for ${selectedStock}`);
+    
+    try {
+      // Using Yahoo Finance RSS feed via RSS2JSON (free service)
+      const response = await fetch(
+        `https://api.rss2json.com/v1/api.json?rss_url=https://feeds.finance.yahoo.com/rss/2.0/headline?s=${selectedStock}&region=US&lang=en-US`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch news');
+      }
+      
+      const data = await response.json();
+      
+      if (data.status !== 'ok' || !data.items) {
+        throw new Error('Invalid response format');
+      }
+      
+      const newsItems: NewsItem[] = data.items.slice(0, 10).map((item: any, index: number) => {
+        const sentimentAnalysis = analyzeSentiment(item.title, item.description || '');
+        
+        return {
+          id: `yahoo-${index}-${Date.now()}`,
+          title: item.title,
+          summary: item.description ? item.description.replace(/<[^>]*>/g, '').substring(0, 200) + '...' : 'No summary available',
+          sentiment: sentimentAnalysis.sentiment,
+          confidence: sentimentAnalysis.confidence,
+          source: 'Yahoo Finance',
+          timestamp: item.pubDate,
+          relevance: 0.8 + Math.random() * 0.2, // High relevance since it's stock-specific
+          url: item.link
+        };
+      });
+      
+      setNews(newsItems);
+      setLastUpdated(new Date());
+      
+      toast({
+        title: "News Updated",
+        description: `Fetched ${newsItems.length} real articles for ${selectedStock}`,
+      });
+    } catch (error) {
+      console.error("Error fetching Yahoo Finance news:", error);
+      
+      // Fallback to mock data if API fails
+      toast({
+        title: "Using Sample Data",
+        description: "Yahoo Finance API unavailable, showing sample news",
+        variant: "destructive",
+      });
+      
+      // Keep existing mock data as fallback
+      const mockNews = generateMockNews();
+      setNews(mockNews);
+      setLastUpdated(new Date());
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Keep mock data as fallback
   const generateMockNews = (): NewsItem[] => {
     const newsTemplates = [
       {
@@ -74,40 +163,16 @@ const NewsAnalyzer = ({ selectedStock }: NewsAnalyzerProps) => {
       title: template.title,
       summary: template.summary,
       sentiment: template.sentiment,
-      confidence: Math.random() * 0.3 + 0.7, // 70-100%
+      confidence: Math.random() * 0.3 + 0.7,
       source: template.source,
       timestamp: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-      relevance: Math.random() * 0.3 + 0.7, // 70-100%
+      relevance: Math.random() * 0.3 + 0.7,
       url: `${template.baseUrl}${selectedStock.toLowerCase()}-${Date.now()}-${index}`
     }));
   };
 
   const fetchNews = async () => {
-    setIsLoading(true);
-    console.log(`Fetching news for ${selectedStock}`);
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const mockNews = generateMockNews();
-      setNews(mockNews);
-      setLastUpdated(new Date());
-      
-      toast({
-        title: "News Updated",
-        description: `Fetched ${mockNews.length} articles for ${selectedStock}`,
-      });
-    } catch (error) {
-      console.error("Error fetching news:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch news. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchYahooFinanceNews();
   };
 
   useEffect(() => {
